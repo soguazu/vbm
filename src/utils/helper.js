@@ -151,16 +151,6 @@ export const sendEmail = async (userInformation) => {
   return true;
 };
 
-export const getUserId = (Authorization) => {
-  if (Authorization) {
-    const token = Authorization.replace('Bearer ', '');
-    const { id } = jwt.verify(token, config.hashingSecret);
-    return id;
-  }
-
-  throw new Error('Not authenticated');
-};
-
 export const verifyAccount = async (mail) => {
   let user;
   const payload = decryptEmail(mail);
