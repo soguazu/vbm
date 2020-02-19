@@ -12,7 +12,7 @@ const sharedEnvVariables = {
 // Development environment
 environments.development = {
   envName: 'development',
-  url:
+  dbUrl:
     process.env.DATABASE_URL_DEV ||
     'postgres://postgres@localhost:5432/vbm-dev',
   httpPort: 8080,
@@ -22,14 +22,14 @@ environments.development = {
 // Production environment
 environments.production = {
   envName: 'production',
-  url: process.env.DATABASE_URL_PROD,
+  dbUrl: process.env.DATABASE_URL_PROD,
   httpPort: 80,
   ...sharedEnvVariables,
 };
 
 environments.test = {
   envName: 'test',
-  url:
+  dbUrl:
     process.env.DATABASE_URL_TEST ||
     'postgres://postgres@localhost:5432/vbm-test',
   httpPort: 8080,

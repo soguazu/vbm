@@ -9,6 +9,7 @@ import config from './src/config/config';
 import winston from './src/config/winston';
 import terminate from './src/config/error';
 import v1 from './src/routes/index';
+import { sequelize } from './src/config/database';
 
 const app = express();
 
@@ -30,11 +31,19 @@ server.on('connection', (socket) => {
   socket.setNoDelay(true); // disable nagle algorithm//console.log('no delay set')
 });
 
-server.listen(config.httpPort, '0.0.0.0', () => {
-  winston.debug(
-    `Server listening on port ${config.httpPort} and running on ${config.envName} environment`,
-  );
-});
+sequelize
+  .sync()
+  .then(() => {
+    winston.debug('Database connected successfully');
+    server.listen(config.httpPort, '0.0.0.0', () => {
+      winston.debug(
+        `Server listening on port ${config.httpPort} and running on ${config.envName} environment`,
+      );
+    });
+  })
+  .catch((error) => {
+    winston.debug(`Something went wrong: ${error}`);
+  });
 
 const exitHandler = terminate(server, {
   coredump: false,
