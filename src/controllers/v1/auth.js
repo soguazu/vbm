@@ -6,24 +6,33 @@ import userLib from '../../libs/user';
 const auth = {};
 
 auth.register = async (req, res) => {
+  let response;
   const { accountNo } = req.body;
   const userInformation = await getUserInfo(accountNo);
 
   if (userInformation.error) {
-    const response = await responseBuilder({
+    response = await responseBuilder({
       ...userInformation,
       status: false,
       data: {},
     });
-    res.status(response.statusCode).send(response);
+    return res.status(response.statusCode).send(response);
   }
 
-  const user = await userLib.create(userInformation);
+  response = await userLib.create(userInformation);
+  if (response.error) {
+    response = await responseBuilder({
+      ...response,
+      status: false,
+      data: {},
+    });
+    return res.status(response.statusCode).send(response);
+  }
 
   await sendEmail(userInformation);
-  const response = await responseBuilder({
+  response = await responseBuilder({
     status: true,
-    data: user,
+    data: {},
     message: 'message sent successfully',
     statusCode: 200,
   });

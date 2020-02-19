@@ -8,7 +8,7 @@ const messages = {
           setting up your password. Click below to setup
           your password.</p><br />
           <a
-          href="http://localhost:4000/verify/?email={mail}"
+          href="http://localhost:3000/verify/?email={mail}"
           class="sender"
           style="background: linear-gradient(90deg, #396afc, #2948ff);
           border:1px solid #2948ff;
@@ -38,7 +38,7 @@ const messages = {
     setting up your password. Click below to setup
     your password.<br />
     <a
-    href="http://localhost:4000/verify/?email={mail}"
+    href="http://localhost:3000/verify/?email={mail}"
     class="sender"
     style="background: linear-gradient(90deg, #396afc, #2948ff);
     border:1px solid #2948ff;

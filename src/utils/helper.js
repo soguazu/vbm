@@ -3,10 +3,13 @@ import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
 import Cryptr from 'cryptr';
+import bcryptjs from 'bcryptjs';
 
 import winston from '../config/winston';
 import config from '../config/config';
 import MESSAGES from './message';
+
+import User from '../models/user';
 
 const cryptr = new Cryptr(config.hashingSecret);
 export const getUserInfo = async (accountNo) => {
@@ -49,7 +52,20 @@ export const encryptEmail = (payload) => {
   return cryptr.encrypt(data);
 };
 
-export const decryptEmail = (payload) => cryptr.decrypt(payload);
+export const decryptEmail = (payload) => {
+  let cleanPayload;
+  try {
+    cleanPayload = cryptr.decrypt(payload);
+  } catch (error) {
+    return { error };
+  }
+
+  return cleanPayload;
+};
+
+export const hashPassword = (password) => bcryptjs.hash(password, 10);
+
+export { hashPassword as default };
 
 export const injectData = async (payload, pattern, type) => {
   const { whatToReplace } = payload;
@@ -99,10 +115,16 @@ export const sendEmail = async (userInformation) => {
     'https://devesb.vfdbank.systems:8263/vfd-agent/1.0/referral/notify';
 
   const verifyEmailPayload = await generateEmailContent(Name, Email, 'VERIFY');
+  // const data = {
+  //   recipientEmail: 'soguazu@gmail.com',
+  //   messageBody: verifyEmailPayload.htmlEmailPayload,
+  //   subject: verifyEmailPayload.SUBJECT,
+  // };
+
   const data = {
-    recipientEmail: 'soguauz@gmail.com',
-    messageBody: verifyEmailPayload.htmlEmailPayload,
-    subject: verifyEmailPayload.SUBJECT,
+    recipientEmail: 'soguazu@gmail.com',
+    messageBody: 'verifyEmailPayloadhtmlEmailPayload',
+    subject: 'verifyEmailPayloadSUBJECT',
   };
 
   const option = {
@@ -111,7 +133,16 @@ export const sendEmail = async (userInformation) => {
       VFDBankAuth: process.env.API_KEY,
     },
   };
-  await axios.post(url, data, option);
+
+  try {
+    await axios.post(url, data, option);
+  } catch (error) {
+    return {
+      error: error.message,
+      statusCode: 500,
+      message: `Mail sender error: ${error}`,
+    };
+  }
 
   return true;
 };
@@ -124,4 +155,32 @@ export const getUserId = (Authorization) => {
   }
 
   throw new Error('Not authenticated');
+};
+
+export const verifyAccount = async (mail) => {
+  let user;
+  const payload = decryptEmail(mail);
+
+  if (payload.error) {
+    return payload;
+  }
+  const strPayload = payload.split('~');
+
+  const email = strPayload[0];
+  const date = new Date(strPayload[1]);
+
+  try {
+    user = await User.findOne({
+      where: {
+        email,
+      },
+    });
+  } catch (error) {
+    return error;
+  }
+
+  const expectedDate = date.setDate(date.getDate() + 1);
+
+  if (user && +new Date(expectedDate) >= +new Date()) return user;
+  return false;
 };

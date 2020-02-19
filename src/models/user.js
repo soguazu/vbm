@@ -1,6 +1,5 @@
 import Sequelize from 'sequelize';
 import jwt from 'jsonwebtoken';
-import Joi from '@hapi/joi';
 
 import { sequelize } from '../config/database';
 import config from '../config/config';
@@ -28,6 +27,7 @@ const User = sequelize.define(
     clientId: {
       type: Sequelize.STRING,
       allowNull: false,
+      unique: true,
     },
     phone: {
       type: Sequelize.STRING,
@@ -36,9 +36,6 @@ const User = sequelize.define(
     password: {
       type: Sequelize.STRING,
       allowNull: true,
-      validate: {
-        is: /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9]{6,}$/i,
-      },
     },
   },
   {
@@ -68,18 +65,18 @@ User.generateAuthToken = (payload) => {
 
 User.findByLogin = async (authId) => {
   let user = await User.findOne({
-    where: { auth_id: authId },
+    where: { id: authId },
   });
 
   if (!user) {
     user = await User.findOne({
-      where: { username: authId },
+      where: { email: authId },
     });
   }
 
   if (!user) {
     user = await User.findOne({
-      where: { id: authId },
+      where: { clientId: authId },
     });
   }
 
