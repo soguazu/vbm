@@ -1,7 +1,7 @@
 import bcryptjs from 'bcryptjs';
 
 import User from '../models/user';
-import { verifyAccount, hashPassword } from '../utils/helper';
+import { verifyAccount, hashPassword, sendEmail } from '../utils/helper';
 
 const userLib = {};
 
@@ -77,6 +77,14 @@ userLib.login = async (payload) => {
     };
   }
 
+  if (!user) {
+    return {
+      error: 'User not found',
+      statusCode: 404,
+      message: 'User not found',
+    };
+  }
+
   try {
     validPassword = await bcryptjs.compare(payload.password, user.password);
   } catch (error) {
@@ -111,6 +119,71 @@ userLib.login = async (payload) => {
       clientId: user.clientId,
     },
   };
+};
+
+userLib.forgotPassword = async (email) => {
+  let user;
+  try {
+    user = await User.findOne({
+      where: {
+        email,
+      },
+    });
+  } catch (error) {
+    return {
+      error: error.message,
+      statusCode: 404,
+      message: `Failure to update user password: ${error.message}`,
+    };
+  }
+  if (!user) {
+    return {
+      error: 'User not found',
+      statusCode: 404,
+      message: 'User not found',
+    };
+  }
+  await sendEmail({ Email: email, Name: user.name });
+  return {
+    status: true,
+    statusCode: 200,
+    message: 'Mail sent successfully',
+    data: {},
+  };
+};
+
+userLib.resetPassword = async (payload) => {
+  let response = await verifyAccount(payload.email);
+
+  if (response.error) {
+    return {
+      error: response.error,
+      statusCode: response.statusCode,
+      message: response.message,
+    };
+  }
+  const password = await hashPassword(payload.password);
+
+  try {
+    response = await User.update(
+      { password },
+      {
+        where: {
+          id: response.id,
+        },
+        returning: true,
+        plain: true,
+      },
+    );
+  } catch (error) {
+    return {
+      error: error.message,
+      statusCode: 500,
+      message: `Failure to update user password: ${error.errors[0].message}`,
+    };
+  }
+
+  return response;
 };
 
 export default userLib;

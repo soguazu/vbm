@@ -115,10 +115,11 @@ export const generateEmailContent = async (name, query, content) => {
 
 export const sendEmail = async (userInformation) => {
   const { Email, Name } = userInformation;
+  const encryptedMail = encryptEmail(Email);
   const url =
     'https://devesb.vfdbank.systems:8263/vfd-agent/1.0/referral/notify';
 
-  const verifyEmailPayload = await generateEmailContent(Name, Email, 'VERIFY');
+  // const verifyEmailPayload = await generateEmailContent(Name, Email, 'VERIFY');
   // const data = {
   //   recipientEmail: 'soguazu@gmail.com',
   //   messageBody: verifyEmailPayload.htmlEmailPayload,
@@ -127,8 +128,8 @@ export const sendEmail = async (userInformation) => {
 
   const data = {
     recipientEmail: 'soguazu@gmail.com',
-    messageBody: 'verifyEmailPayloadhtmlEmailPayload',
-    subject: 'verifyEmailPayloadSUBJECT',
+    messageBody: `Welcome to V Bank Agency banking!!\nClick on the link below to reset password\nhttp://localhost:3000/reset-password?email=${encryptedMail}`,
+    subject: 'V Bank Agent',
   };
 
   const option = {
@@ -172,6 +173,14 @@ export const verifyAccount = async (mail) => {
   } catch (error) {
     return {
       error: error.message,
+      statusCode: 404,
+      message: 'User not found',
+    };
+  }
+
+  if (!user) {
+    return {
+      error: 'User not found',
       statusCode: 404,
       message: 'User not found',
     };
