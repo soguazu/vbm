@@ -16,7 +16,7 @@ user.password = async (req, res) => {
   if (response.error) {
     response = await responseBuilder({
       status: false,
-      statusCode: 400,
+      statusCode: response.statusCode,
       message: response.message,
       data: {},
     });

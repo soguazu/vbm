@@ -1,3 +1,5 @@
+import bcryptjs from 'bcryptjs';
+
 import User from '../models/user';
 import { verifyAccount, hashPassword } from '../utils/helper';
 
@@ -29,9 +31,9 @@ userLib.updatePassword = async (payload) => {
 
   if (response.error) {
     return {
-      error: 'Bad token',
-      statusCode: 400,
-      message: 'Invalid token',
+      error: response.error,
+      statusCode: response.statusCode,
+      message: response.message,
     };
   }
   const password = await hashPassword(payload.password);
@@ -56,6 +58,59 @@ userLib.updatePassword = async (payload) => {
   }
 
   return response;
+};
+
+userLib.login = async (payload) => {
+  let user;
+  let validPassword;
+  try {
+    user = await User.findOne({
+      where: {
+        email: payload.email,
+      },
+    });
+  } catch (error) {
+    return {
+      error: error.message,
+      statusCode: 404,
+      message: 'User not found',
+    };
+  }
+
+  try {
+    validPassword = await bcryptjs.compare(payload.password, user.password);
+  } catch (error) {
+    return {
+      error: error.message,
+      statusCode: 404,
+      message: 'Invalid email or password',
+    };
+  }
+  if (!validPassword) {
+    return {
+      error: 'wrong password',
+      statusCode: 400,
+      message: 'Invalid email or password',
+    };
+  }
+  const data = {
+    id: user.id,
+    clientId: user.clientId,
+  };
+  // Generating token if login was successfully
+  const token = User.generateAuthToken(data);
+
+  return {
+    status: true,
+    statusCode: 200,
+    message: 'Login successfully',
+    data: {
+      token,
+      id: user.id,
+      name: user.name,
+      clientId: user.clientId,
+    },
+  };
 };
 
 export default userLib;

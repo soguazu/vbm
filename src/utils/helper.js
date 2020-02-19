@@ -57,7 +57,11 @@ export const decryptEmail = (payload) => {
   try {
     cleanPayload = cryptr.decrypt(payload);
   } catch (error) {
-    return { error };
+    return {
+      error: error.message,
+      statusCode: 400,
+      message: 'Invalid token',
+    };
   }
 
   return cleanPayload;
@@ -176,7 +180,11 @@ export const verifyAccount = async (mail) => {
       },
     });
   } catch (error) {
-    return error;
+    return {
+      error: error.message,
+      statusCode: 404,
+      message: 'User not found',
+    };
   }
 
   const expectedDate = date.setDate(date.getDate() + 1);
