@@ -128,7 +128,8 @@ export const sendEmail = async (userInformation) => {
 
   const data = {
     recipientEmail: 'soguazu@gmail.com',
-    messageBody: `Welcome to V Bank Agency banking!!\nClick on the link below to reset password\nhttp://localhost:3000/reset-password?email=${encryptedMail}`,
+    // messageBody: `Welcome to V Bank Agency banking!!\nClick on the link below to reset password\nhttp://localhost:3000/reset-password?email=${encryptedMail}`,
+    messageBody: 'Welcome to V Bank Agency banking!!',
     subject: 'V Bank Agent',
   };
 

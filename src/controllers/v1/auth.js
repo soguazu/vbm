@@ -32,7 +32,7 @@ auth.register = async (req, res) => {
   await sendEmail(userInformation);
   response = await responseBuilder({
     status: true,
-    data: {},
+    data: response,
     message: 'message sent successfully',
     statusCode: 200,
   });

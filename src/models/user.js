@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { sequelize } from '../config/database';
 import config from '../config/config';
+import Token from './token';
 
 const User = sequelize.define(
   'users',
@@ -37,6 +38,10 @@ const User = sequelize.define(
       type: Sequelize.STRING,
       allowNull: true,
     },
+    referralCode: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
   },
   {
     underscored: false,
@@ -62,6 +67,8 @@ User.generateAuthToken = (payload) => {
 
   return { AccessToken, RefreshToken };
 };
+
+User.hasOne(Token, { foreignKey: 'userId', onDelete: 'cascade' });
 
 User.findByLogin = async (authId) => {
   let user = await User.findOne({

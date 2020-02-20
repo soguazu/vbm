@@ -1,29 +1,52 @@
 import bcryptjs from 'bcryptjs';
+import uniqid from 'uniqid';
+import _ from 'lodash';
 
 import User from '../models/user';
 import { verifyAccount, hashPassword, sendEmail } from '../utils/helper';
+import tokenLib from './token';
 
 const userLib = {};
 
 userLib.create = async (payload) => {
   let user;
+
+  const referralCode = uniqid('vbm-');
   try {
     user = await User.create({
       email: payload.Email,
       name: payload.Name,
       clientId: payload['Client ID'],
       phone: payload.Phone,
-      password: null,
+      referralCode,
     });
   } catch (error) {
     return {
       error: error.message,
       statusCode: 500,
-      message: `Create user error: ${error.errors[0].message}`,
+      message: `Create user error: ${error.message}`,
     };
   }
 
-  return user;
+  const token = User.generateAuthToken({
+    id: user.id,
+    clientId: user.clientId,
+  });
+
+  const response = await tokenLib.create({ ...token, id: user.id });
+
+  if (response.error) {
+    return {
+      error: response.error,
+      statusCode: response.statusCode,
+      message: response.message,
+    };
+  }
+
+  return {
+    ..._.pick(user, ['id', 'name', 'email', 'cliendId', 'phone']),
+    ...token,
+  };
 };
 
 userLib.updatePassword = async (payload) => {
@@ -107,6 +130,16 @@ userLib.login = async (payload) => {
   };
   // Generating token if login was successfully
   const token = User.generateAuthToken(data);
+
+  const response = await tokenLib.create({ ...token, id: user.id });
+
+  if (response.error) {
+    return {
+      error: response.error,
+      statusCode: response.statusCode,
+      message: response.message,
+    };
+  }
 
   return {
     status: true,
