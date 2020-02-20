@@ -79,7 +79,7 @@ user.resetPassword = async (req, res) => {
     message: 'Password updated successfully',
     statusCode: 202,
   });
-  res.status(response.statusCode).send(response);
+  return res.status(response.statusCode).send(response);
 };
 
 export default user;

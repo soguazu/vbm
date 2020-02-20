@@ -52,7 +52,7 @@ User.generateAuthToken = (payload) => {
   const tokenDate = new Date();
   const refreshTokenDate = new Date();
 
-  tokenDate.setDate(tokenDate.getDate() + 15);
+  tokenDate.setDate(tokenDate.getDate() + 1);
   refreshTokenDate.setDate(refreshTokenDate.getDate() + 40);
   const tokenTime = Math.floor(tokenDate.getTime() / 1000);
   const refreshTime = Math.floor(refreshTokenDate.getTime() / 1000);

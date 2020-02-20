@@ -11,7 +11,6 @@ token.create = async (payload) => {
       refresh: payload.RefreshToken,
     });
   } catch (error) {
-    console.log(error);
     return {
       error: error.message,
       statusCode: 500,
@@ -20,6 +19,32 @@ token.create = async (payload) => {
   }
 
   return createdToken;
+};
+
+token.getToken = async (payload) => {
+  let retreivedToken;
+  try {
+    retreivedToken = await Token.findOne({
+      where: {
+        userId: payload.id,
+      },
+    });
+  } catch (error) {
+    return {
+      error: error.message,
+      statusCode: 500,
+      message: `Unrecognize token: ${error.message}`,
+    };
+  }
+
+  if (!retreivedToken) {
+    return {
+      error: 'Invalid token',
+      statusCode: 500,
+      message: 'Unrecognize token',
+    };
+  }
+  return retreivedToken;
 };
 
 export default token;

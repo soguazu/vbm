@@ -24,7 +24,7 @@ userLib.create = async (payload) => {
     return {
       error: error.message,
       statusCode: 500,
-      message: `Create user error: ${error.message}`,
+      message: `Someone has registered with this account: ${error.message}`,
     };
   }
 

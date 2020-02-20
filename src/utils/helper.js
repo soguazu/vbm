@@ -127,7 +127,7 @@ export const sendEmail = async (userInformation) => {
   // };
 
   const data = {
-    recipientEmail: 'soguazu@gmail.com',
+    recipientEmail: 'justmondris@gmail.com',
     // messageBody: `Welcome to V Bank Agency banking!!\nClick on the link below to reset password\nhttp://localhost:3000/reset-password?email=${encryptedMail}`,
     messageBody: 'Welcome to V Bank Agency banking!!',
     subject: 'V Bank Agent',
@@ -191,4 +191,15 @@ export const verifyAccount = async (mail) => {
 
   if (user && +new Date(expectedDate) >= +new Date()) return user;
   return false;
+};
+
+export const generateToken = async (payload) => {
+  const tokenDate = new Date();
+  tokenDate.setDate(tokenDate.getDate() + 1);
+  const tokenTime = Math.floor(tokenDate.getTime() / 1000);
+
+  const token = await jwt.sign(payload, config.hashingSecret, {
+    expiresIn: tokenTime,
+  });
+  return token;
 };

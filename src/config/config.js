@@ -3,6 +3,7 @@ const environments = {};
 
 const sharedEnvVariables = {
   hashingSecret: process.env.MY_SECRET || 'xyz',
+  apikey: process.env.MY_API_KEY,
   service: process.env.SERVICE,
   mail: process.env.FROM_EMAIL,
   password: process.env.EMAIL_PASSWORD,
@@ -49,4 +50,4 @@ const environmentToExport =
     : environments.development;
 
 // Export the module
-export { environmentToExport as default };
+export default environmentToExport;
