@@ -1,5 +1,3 @@
-const config = require('../config/config');
-
 const auth = (request, response, next) => {
   if (
     request.headers.authorization &&

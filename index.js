@@ -12,7 +12,7 @@ import v1 from './src/routes/index';
 import { sequelize } from './src/config/database';
 
 const app = express();
-
+const PORT = process.env.PORT || config.httpPort;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -35,9 +35,9 @@ sequelize
   .sync()
   .then(() => {
     winston.debug('Database connected successfully');
-    server.listen(config.httpPort, '0.0.0.0', () => {
+    server.listen(PORT, '0.0.0.0', () => {
       winston.debug(
-        `Server listening on port ${config.httpPort} and running on ${config.envName} environment`,
+        `Server listening on port ${PORT} and running on ${config.envName} environment`,
       );
     });
   })

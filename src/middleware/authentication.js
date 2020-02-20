@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const config = require('../config/config');
 
 const auth = (request, response, next) => {
-  console.log(config);
   if (
     request.headers.authorization &&
     request.headers.authorization.split(' ')[2] === 'Basic'
