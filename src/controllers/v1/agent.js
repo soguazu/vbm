@@ -1,6 +1,8 @@
 import axios from 'axios';
 import responseBuilder from '../../utils/error';
 
+import getAgentDetail from '../../utils/agentInfo';
+
 const agent = {};
 
 agent.data = async (req, res) => {
@@ -26,12 +28,18 @@ agent.data = async (req, res) => {
     });
     return res.status(response.statusCode).send(response);
   }
+  const { TotalActiveClients, TotalDeposits } = response.data.Data;
+
+  const agentData = await getAgentDetail(+TotalActiveClients, +TotalDeposits);
 
   const newResponse = await responseBuilder({
     status: true,
     statusCode: 200,
     message: response.Message,
-    data: response.data.Data,
+    data: {
+      ...response.data.Data,
+      ...agentData,
+    },
   });
   return res.status(newResponse.statusCode).send(newResponse);
 };

@@ -32,6 +32,33 @@ user.password = async (req, res) => {
   res.status(response.statusCode).send(response);
 };
 
+user.changePassword = async (req, res) => {
+  const payload = {
+    id: req.user.id,
+    password: req.body.password,
+  };
+
+  let response = await userLib.changePassword(payload);
+
+  if (response.error) {
+    response = await responseBuilder({
+      status: false,
+      statusCode: response.statusCode,
+      message: response.message,
+      data: {},
+    });
+    return res.status(response.statusCode).send(response);
+  }
+
+  response = await responseBuilder({
+    status: true,
+    data: {},
+    message: 'Password updated successfully',
+    statusCode: 202,
+  });
+  return res.status(response.statusCode).send(response);
+};
+
 user.forgotPassword = async (req, res) => {
   let response = await userLib.forgotPassword(req.body.email);
 
@@ -54,7 +81,7 @@ user.forgotPassword = async (req, res) => {
   res.status(response.statusCode).send(response);
 };
 
-user.resetPassword = async (req, res) => {
+user.setPassword = async (req, res) => {
   let response;
   const payload = {
     email: req.body.email,

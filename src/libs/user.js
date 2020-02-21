@@ -11,14 +11,13 @@ const userLib = {};
 userLib.create = async (payload) => {
   let user;
 
-  const referralCode = uniqid('vbm-');
   try {
     user = await User.create({
       email: payload.Email,
       name: payload.Name,
       clientId: payload['Client ID'],
       phone: payload.Phone,
-      referralCode,
+      referralCode: payload['Referral Code'],
     });
   } catch (error) {
     return {
@@ -44,7 +43,15 @@ userLib.create = async (payload) => {
   }
 
   return {
-    ..._.pick(user, ['id', 'name', 'email', 'cliendId', 'phone']),
+    ..._.pick(user, [
+      'id',
+      'name',
+      'email',
+      'cliendId',
+      'phone',
+      'referralCode',
+      'accountNo',
+    ]),
     ...token,
   };
 };
@@ -76,7 +83,7 @@ userLib.updatePassword = async (payload) => {
     return {
       error: error.message,
       statusCode: 500,
-      message: `Failure to update user password: ${error.errors[0].message}`,
+      message: `Failure to update user password: ${error.message}`,
     };
   }
 
@@ -150,6 +157,8 @@ userLib.login = async (payload) => {
       id: user.id,
       name: user.name,
       clientId: user.clientId,
+      referralCode: user.referralCode,
+      accountNo: user.accountNo,
     },
   };
 };
@@ -212,7 +221,50 @@ userLib.resetPassword = async (payload) => {
     return {
       error: error.message,
       statusCode: 500,
-      message: `Failure to update user password: ${error.errors[0].message}`,
+      message: `Failure to update user password: ${error.message}`,
+    };
+  }
+
+  return response;
+};
+
+userLib.changePassword = async (payload) => {
+  let response;
+  let user;
+  try {
+    user = await User.findByPk(payload.id);
+  } catch (error) {
+    return {
+      error: error.message,
+      statusCode: 500,
+      message: `Failure to get user: ${error.message}`,
+    };
+  }
+
+  if (!user) {
+    return {
+      error: 'User not found',
+      statusCode: 500,
+      message: 'User not found',
+    };
+  }
+
+  try {
+    response = await User.update(
+      { password: payload.password },
+      {
+        where: {
+          id: user.id,
+        },
+        returning: true,
+        plain: true,
+      },
+    );
+  } catch (error) {
+    return {
+      error: error.message,
+      statusCode: 500,
+      message: `Failure to update user password: ${error.message}`,
     };
   }
 

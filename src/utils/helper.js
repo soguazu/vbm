@@ -127,8 +127,8 @@ export const sendEmail = async (userInformation) => {
   // };
 
   const data = {
-    recipientEmail: 'soguazu@gmail.com',
-    messageBody: `Hi ${Name}, Welcome to V Bank Agency banking!! Click on the link below to reset password http://localhost:3000/reset-password?email=${encryptedMail}`,
+    recipientEmail: 'olaayo10@gmail.com',
+    messageBody: `Hi ${Name}, Welcome to V Bank Agency banking!! Click on the link below to reset password http://localhost:3000/auth/set-password?email=${encryptedMail}`,
     subject: 'V Bank Agent',
   };
 
@@ -202,3 +202,13 @@ export const generateToken = async (payload) => {
   });
   return token;
 };
+
+// export const getAgentDetail = async (payload) => {
+//   const { TotalActiveClients, TotalDeposits } = payload;
+// };
+
+// const = [
+//   "agent1": {
+
+//   }
+// ]
