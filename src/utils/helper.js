@@ -1,26 +1,26 @@
-import axios from 'axios';
-import jwt from 'jsonwebtoken';
-import fs from 'fs';
-import path from 'path';
-import Cryptr from 'cryptr';
-import bcryptjs from 'bcryptjs';
+import axios from "axios";
+import jwt from "jsonwebtoken";
+import fs from "fs";
+import path from "path";
+import Cryptr from "cryptr";
+import bcryptjs from "bcryptjs";
 
-import winston from '../config/winston';
-import config from '../config/config';
-import MESSAGES from './message';
+import winston from "../config/winston";
+import config from "../config/config";
+import MESSAGES from "./message";
 
-import User from '../models/user';
+import User from "../models/user";
 
 const cryptr = new Cryptr(config.hashingSecret);
-export const getUserInfo = async (accountNo) => {
+export const getUserInfo = async accountNo => {
   let response;
   const url = `https://devesb.vfdbank.systems:8263/vfd-agent/1.0/referral/enquiry?accountNo=${accountNo}`;
 
   const option = {
     headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-      VFDBankAuth: process.env.API_KEY,
-    },
+      "Content-type": "application/json; charset=UTF-8",
+      VFDBankAuth: process.env.API_KEY
+    }
   };
 
   try {
@@ -30,7 +30,7 @@ export const getUserInfo = async (accountNo) => {
     return {
       error: error.message,
       statusCode: 404,
-      message: 'Account not found',
+      message: "Account not found"
     };
   }
   return response.data.Data;
@@ -38,7 +38,7 @@ export const getUserInfo = async (accountNo) => {
 
 export const getEmailTemplate = async () =>
   new Promise((resolve, reject) => {
-    fs.readFile(path.join(__dirname, 'mail.html'), (err, data) => {
+    fs.readFile(path.join(__dirname, "mail.html"), (err, data) => {
       if (err) {
         reject(err);
       } else {
@@ -47,12 +47,12 @@ export const getEmailTemplate = async () =>
     });
   });
 
-export const encryptEmail = (payload) => {
+export const encryptEmail = payload => {
   const data = `${payload}~${new Date()}`;
   return cryptr.encrypt(data);
 };
 
-export const decryptEmail = (payload) => {
+export const decryptEmail = payload => {
   let cleanPayload;
   try {
     cleanPayload = cryptr.decrypt(payload);
@@ -60,24 +60,24 @@ export const decryptEmail = (payload) => {
     return {
       error: error.message,
       statusCode: 400,
-      message: 'Invalid token',
+      message: "Invalid token"
     };
   }
 
   return cleanPayload;
 };
 
-export const hashPassword = (password) => bcryptjs.hash(password, 10);
+export const hashPassword = password => bcryptjs.hash(password, 10);
 
 export { hashPassword as default };
 
 export const injectData = async (payload, pattern, type) => {
   const { whatToReplace } = payload;
-  const whereToReplace = type === 'HTML' ? payload.HTML : payload.PLAIN;
+  const whereToReplace = type === "HTML" ? payload.HTML : payload.PLAIN;
 
   const res = whereToReplace.replace(
     pattern,
-    (matched) => whatToReplace[matched],
+    matched => whatToReplace[matched]
   );
 
   return res;
@@ -85,23 +85,23 @@ export const injectData = async (payload, pattern, type) => {
 
 export const generateEmailContent = async (name, query, content) => {
   const encryptedMail = encryptEmail(query);
-  const whatToReplace = { '{name}': name, '{mail}': encryptedMail };
+  const whatToReplace = { "{name}": name, "{mail}": encryptedMail };
   const pattern = /{name}|{mail}/gi;
   const { SUBJECT, HTML, PLAIN } = MESSAGES[content];
 
   const payloadHTML = {
     HTML,
-    whatToReplace,
+    whatToReplace
   };
   const payloadPLAIN = {
     PLAIN,
-    whatToReplace,
+    whatToReplace
   };
 
   const mailPayload = await getEmailTemplate();
 
-  const html = await injectData(payloadHTML, pattern, 'HTML');
-  const plain = await injectData(payloadPLAIN, pattern, 'PLAIN');
+  const html = await injectData(payloadHTML, pattern, "HTML");
+  const plain = await injectData(payloadPLAIN, pattern, "PLAIN");
 
   const htmlEmailPayload = mailPayload.replace(/{message}/gi, html);
   const plainEmailPayload = mailPayload.replace(/{message}/gi, plain);
@@ -109,15 +109,15 @@ export const generateEmailContent = async (name, query, content) => {
     mail: query,
     htmlEmailPayload,
     plainEmailPayload,
-    SUBJECT,
+    SUBJECT
   };
 };
 
-export const sendEmail = async (userInformation) => {
+export const sendEmail = async userInformation => {
   const { Email, Name } = userInformation;
   const encryptedMail = encryptEmail(Email);
   const url =
-    'https://devesb.vfdbank.systems:8263/vfd-agent/1.0/referral/notify';
+    "https://devesb.vfdbank.systems:8263/vfd-agent/1.0/referral/notify";
 
   // const verifyEmailPayload = await generateEmailContent(Name, Email, 'VERIFY');
   // const data = {
@@ -127,16 +127,16 @@ export const sendEmail = async (userInformation) => {
   // };
 
   const data = {
-    recipientEmail: 'olaayo10@gmail.com',
-    messageBody: `Hi ${Name}, Welcome to V Bank Agency banking!! Click on the link below to reset password http://localhost:3000/auth/set-password?email=${encryptedMail}`,
-    subject: 'V Bank Agent',
+    recipientEmail: "olaayo10@gmail.com",
+    messageBody: `Hi ${Name}, Welcome to V Bank Agency banking!! Click on the link below to reset password ${process.env.CLIENT_HOSTNAME}/auth/set-password?email=${encryptedMail}`,
+    subject: "V Bank Agent"
   };
 
   const option = {
     headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-      VFDBankAuth: process.env.API_KEY,
-    },
+      "Content-type": "application/json; charset=UTF-8",
+      VFDBankAuth: process.env.API_KEY
+    }
   };
 
   try {
@@ -145,21 +145,21 @@ export const sendEmail = async (userInformation) => {
     return {
       error: error.message,
       statusCode: 500,
-      message: `Mail sender error: ${error}`,
+      message: `Mail sender error: ${error}`
     };
   }
 
   return true;
 };
 
-export const verifyAccount = async (mail) => {
+export const verifyAccount = async mail => {
   let user;
   const payload = decryptEmail(mail);
 
   if (payload.error) {
     return payload;
   }
-  const strPayload = payload.split('~');
+  const strPayload = payload.split("~");
 
   const email = strPayload[0];
   const date = new Date(strPayload[1]);
@@ -167,22 +167,22 @@ export const verifyAccount = async (mail) => {
   try {
     user = await User.findOne({
       where: {
-        email,
-      },
+        email
+      }
     });
   } catch (error) {
     return {
       error: error.message,
       statusCode: 404,
-      message: 'User not found',
+      message: "User not found"
     };
   }
 
   if (!user) {
     return {
-      error: 'User not found',
+      error: "User not found",
       statusCode: 404,
-      message: 'User not found',
+      message: "User not found"
     };
   }
 
@@ -192,13 +192,13 @@ export const verifyAccount = async (mail) => {
   return false;
 };
 
-export const generateToken = async (payload) => {
+export const generateToken = async payload => {
   const tokenDate = new Date();
   tokenDate.setDate(tokenDate.getDate() + 1);
   const tokenTime = Math.floor(tokenDate.getTime() / 1000);
 
   const token = await jwt.sign(payload, config.hashingSecret, {
-    expiresIn: tokenTime,
+    expiresIn: tokenTime
   });
   return token;
 };
