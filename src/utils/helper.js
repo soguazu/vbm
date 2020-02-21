@@ -113,7 +113,7 @@ export const generateEmailContent = async (name, query, content) => {
   };
 };
 
-export const sendEmail = async (userInformation) => {
+export const sendEmail = async (userInformation, pathurl) => {
   const { Email, Name } = userInformation;
   const encryptedMail = encryptEmail(Email);
   const url =
@@ -128,7 +128,7 @@ export const sendEmail = async (userInformation) => {
 
   const data = {
     recipientEmail: Email,
-    messageBody: `Hi ${Name}, Welcome to V Bank Agency banking!! Click on the link below to reset password ${process.env.CLIENT_HOSTNAME}/auth/set-password?email=${encryptedMail}`,
+    messageBody: `Hi ${Name}, Welcome to V Bank Agency banking!! Click on the link below to reset password ${process.env.CLIENT_HOSTNAME}/${pathurl}?email=${encryptedMail}`,
     subject: 'V Bank Agent',
   };
 

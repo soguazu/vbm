@@ -29,7 +29,7 @@ auth.register = async (req, res) => {
     return res.status(response.statusCode).send(response);
   }
 
-  await sendEmail(userInformation);
+  await sendEmail(userInformation, 'auth/set-password');
   response = await responseBuilder({
     status: true,
     data: response,

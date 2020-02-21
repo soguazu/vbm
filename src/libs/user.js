@@ -185,7 +185,7 @@ userLib.forgotPassword = async (email) => {
       message: 'User not found',
     };
   }
-  await sendEmail({ Email: email, Name: user.name });
+  await sendEmail({ Email: email, Name: user.name }, 'user/reset-password');
   return {
     status: true,
     statusCode: 200,
