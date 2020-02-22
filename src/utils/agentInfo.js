@@ -198,6 +198,7 @@ const getAgentDetail = async (activeClient, totalMoney) => {
   const noAccountToNextAgency = data[next].account - data[level].account;
 
   return {
+    status: level,
     ...data[level],
     noAccountToNextAgency,
   };
