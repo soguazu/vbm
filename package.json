@@ -4,7 +4,7 @@
   "description": "API to register and onboard agents",
   "main": "index.js",
   "repository": "https://github.com/soguazu/vbm.git",
-  "author": "dearests <soguazu@gmail.com>",
+  "author": "itscope info@itscopesolution.com",
   "license": "MIT",
   "private": true,
   "scripts": {
